@@ -20,9 +20,23 @@ const TerminalComponent = () => {
 		// Open the terminal into the referenced div
 		term.open(terminalRef.current);
 
-		// ASCII text before the starting line
-		const asciiText =``
-		term.write('\n' + asciiText + '\r\n')
+		// Function to resize the terminal
+		const resizeTerminal = () => {
+			if (terminalRef.current) {
+				const { clientWidth, clientHeight } = terminalRef.current;
+			
+				// Estimate character size
+				// Adjust the divisor based on your font size
+				const cols = Math.floor(clientWidth / 10);
+				const rows = Math.floor(clientHeight / 20);
+				term.resize(cols,rows);
+			}
+		};
+
+		// Initial Resize
+		resizeTerminal();
+		
+		window.addEventListener('resize', resizeTerminal);
 
 		// Starting Line
 		term.write('Welcome to my portfolio!\r\nType "help" for a list of available commands\r\n> ');
@@ -33,6 +47,7 @@ const TerminalComponent = () => {
 		// Cleanup function
 		/* The terminal instance remains active even when the component unmounts. So a cleanup function is returned to dispose of the terminal when the component is unmounted. useEffect only runs when the components are mounted and reloads upon the dependent changes. But even before the component is mounted and while is being rendered, a terminal instance runs which is left undisposed even when the mounting and rendering is complete which leaves us with two terminal instances running. So we need to make sure the terminal instance runs only for the mounted component. */
 		return () => {
+			window.removeEventListener('resize', resizeTerminal);
 			term.dispose();
 		};
 	}, []);
