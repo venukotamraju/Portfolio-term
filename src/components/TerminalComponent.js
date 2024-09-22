@@ -4,8 +4,7 @@ import { Terminal } from '@xterm/xterm';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { useEffect, useRef, useState } from 'react';
-import { comma } from 'postcss/lib/list';
+import { useEffect, useRef } from 'react';
 
 const TerminalComponent = () => {
 	const terminalRef = useRef(null);
@@ -42,6 +41,9 @@ const TerminalComponent = () => {
 					fitAddon.activate(term);
 					fitAddon.fit();
 
+					// Opening ASCII text
+					term.write(`${asciiArt.cover}\r\n `)
+
 					// Starting Line
 					term.write('Welcome to my portfolio!\r\nType "help" for a list of available commands\r\n> ');
 
@@ -50,19 +52,9 @@ const TerminalComponent = () => {
 					// Handle terminal input
 					handleTerminalInput(term);
 
-					// Event listeners for focusing terminal in touch or click
-					const handleTouchOrClick = () => {
-						term.focus();
-					};
-
-					terminalRef.current.addEventListener('touchstart', handleTouchOrClick);
-					terminalRef.current.addEventListener('click', handleTouchOrClick);
-
 					// Cleanup function
 					/* The terminal instance remains active even when the component unmounts. So a cleanup function is returned to dispose of the terminal when the component is unmounted. useEffect only runs when the components are mounted and reloads upon the dependent changes. But even before the component is mounted and while is being rendered, a terminal instance runs which is left undisposed even when the mounting and rendering is complete which leaves us with two terminal instances running. So we need to make sure the terminal instance runs only for the mounted component. */
 					return () => {
-						terminalRef.current.removeEventListener('touchstart', handleTouchOrClick);
-						terminalRef.current.removeEventListener('click', handleTouchOrClick);
 						term.dispose();
 					};
 				}
@@ -118,7 +110,7 @@ const TerminalComponent = () => {
 					const newIndex = historyIndexRef.current + 1;
 					historyIndexRef.current = newIndex;
 					const command = commandHistoryRef.current[commandHistoryRef.current.length - 1 - newIndex];
-					
+
 					// clear current line
 					term.write('\r\x1B[K');
 
@@ -179,6 +171,15 @@ const TerminalComponent = () => {
 		return null;
 	};
 
+	// Ascii art
+	const asciiArt = {
+		cover: `\r\n\r\n\u2588\u2588\u2557   \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2557   \u2588\u2588\u2557\u2588\u2588\u2557   \u2588\u2588\u2557    \u2588\u2588\u2557  \u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2557      \u2588\u2588\u2557\u2588\u2588\u2557   \u2588\u2588\u2557\r\n\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551    \u2588\u2588\u2551 \u2588\u2588\u2554\u255D\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u255A\u2550\u2550\u2588\u2588\u2554\u2550\u2550\u255D\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557     \u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\r\n\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551    \u2588\u2588\u2588\u2588\u2588\u2554\u255D \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2588\u2588\u2554\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551     \u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\r\n\u255A\u2588\u2588\u2557 \u2588\u2588\u2554\u255D\u2588\u2588\u2554\u2550\u2550\u255D  \u2588\u2588\u2551\u255A\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551    \u2588\u2588\u2554\u2550\u2588\u2588\u2557 \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551\u255A\u2588\u2588\u2554\u255D\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588   \u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\r\n \u255A\u2588\u2588\u2588\u2588\u2554\u255D \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551 \u255A\u2588\u2588\u2588\u2588\u2551\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D    \u2588\u2588\u2551  \u2588\u2588\u2557\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D   \u2588\u2588\u2551   \u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551 \u255A\u2550\u255D \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u255A\u2588\u2588\u2588\u2588\u2588\u2554\u255D\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D\r\n  \u255A\u2550\u2550\u2550\u255D  \u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u2550\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D     \u255A\u2550\u255D  \u255A\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D    \u255A\u2550\u255D   \u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u255D     \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u255D  \u255A\u2550\u2550\u2550\u2550\u2550\u255D \r\n                                                                                                                      \r\n\r\n`,
+		resume: ` ______     ______     ______     __  __     __    __     ______    \r\n\/\\  == \\   \/\\  ___\\   \/\\  ___\\   \/\\ \\\/\\ \\   \/\\ \"-.\/  \\   \/\\  ___\\   \r\n\\ \\  __<   \\ \\  __\\   \\ \\___  \\  \\ \\ \\_\\ \\  \\ \\ \\-.\/\\ \\  \\ \\  __\\   \r\n \\ \\_\\ \\_\\  \\ \\_____\\  \\\/\\_____\\  \\ \\_____\\  \\ \\_\\ \\ \\_\\  \\ \\_____\\ \r\n  \\\/_\/ \/_\/   \\\/_____\/   \\\/_____\/   \\\/_____\/   \\\/_\/  \\\/_\/   \\\/_____\/ \r\n                                                                    \r\n\r\n`,
+		projects:`\r\n\r\n ______   ______     ______       __     ______     ______     ______   ______    \r\n\/\\  == \\ \/\\  == \\   \/\\  __ \\     \/\\ \\   \/\\  ___\\   \/\\  ___\\   \/\\__  _\\ \/\\  ___\\   \r\n\\ \\  _-\/ \\ \\  __<   \\ \\ \\\/\\ \\   _\\_\\ \\  \\ \\  __\\   \\ \\ \\____  \\\/_\/\\ \\\/ \\ \\___  \\  \r\n \\ \\_\\    \\ \\_\\ \\_\\  \\ \\_____\\ \/\\_____\\  \\ \\_____\\  \\ \\_____\\    \\ \\_\\  \\\/\\_____\\ \r\n  \\\/_\/     \\\/_\/ \/_\/   \\\/_____\/ \\\/_____\/   \\\/_____\/   \\\/_____\/     \\\/_\/   \\\/_____\/ \r\n                                                                                  \r\n\r\n`,
+		contact: `\r\n\r\n ______     ______     __   __     ______   ______     ______     ______      __    __     ______    \r\n\/\\  ___\\   \/\\  __ \\   \/\\ \"-.\\ \\   \/\\__  _\\ \/\\  __ \\   \/\\  ___\\   \/\\__  _\\    \/\\ \"-.\/  \\   \/\\  ___\\   \r\n\\ \\ \\____  \\ \\ \\\/\\ \\  \\ \\ \\-.  \\  \\\/_\/\\ \\\/ \\ \\  __ \\  \\ \\ \\____  \\\/_\/\\ \\\/    \\ \\ \\-.\/\\ \\  \\ \\  __\\   \r\n \\ \\_____\\  \\ \\_____\\  \\ \\_\\\\\"\\_\\    \\ \\_\\  \\ \\_\\ \\_\\  \\ \\_____\\    \\ \\_\\     \\ \\_\\ \\ \\_\\  \\ \\_____\\ \r\n  \\\/_____\/   \\\/_____\/   \\\/_\/ \\\/_\/     \\\/_\/   \\\/_\/\\\/_\/   \\\/_____\/     \\\/_\/      \\\/_\/  \\\/_\/   \\\/_____\/ \r\n                                                                                                     \r\n\r\n`,
+	}
+
+
 	// Array and Object to structure details for projects
 	const projects = [
 		{
@@ -216,16 +217,20 @@ const TerminalComponent = () => {
 				term.write(' - contact: Show contact info\r\n');
 				break;
 			case 'projects':
+				term.write(asciiArt.projects + '\r\n');
 				term.write('Here are some of my projects:\r\n');
 				projects.forEach((project, index) => {
 					term.write(` ${index + 1}. ${project.name} - ${project.description}\r\n visit: ${project.url}\r\n`);
 				})
 				break;
 			case 'resume':
+				term.write(asciiArt.resume + '\r\n');
+
 				// Generate the full url so the link will be clickable
 				term.write(`You can download my resume here: ${window.location.origin}/venu_working.pdf\r\n`);
 				break;
 			case 'contact':
+				term.write(asciiArt.contact + '\r\n');
 				term.write('Contact Info:\r\n');
 				term.write(' - Email: kotamraju.venugopal@gmail.com\r\n');
 				term.write(' - LinkedIn: https://www.linkedin.com/in/venukotamraju/\r\n');
