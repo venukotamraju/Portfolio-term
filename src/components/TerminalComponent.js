@@ -231,6 +231,10 @@ const TerminalComponent = () => {
 				term.write(' - LinkedIn: https://www.linkedin.com/in/venukotamraju/\r\n');
 				term.write(' - Github: https://github.com/venukotamraju\r\n')
 				break;
+			case 'clear':
+				term.clear();
+				term.write('Welcome to my portfolio!\r\nType "help" for a list of available commands\r\n ');
+				break;
 			default:
 				term.write(`Unknown command: ${command}\r\n`);
 				break;
