@@ -4,11 +4,16 @@ import { Terminal } from '@xterm/xterm';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { comma } from 'postcss/lib/list';
 
 const TerminalComponent = () => {
 	const terminalRef = useRef(null);
 	const terminalInstance = useRef(null);
+
+	// Using a ref to store the historyIndex and commandHistory locally
+	const commandHistoryRef = useRef([]);
+	const historyIndexRef = useRef(-1);
 
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
@@ -76,36 +81,102 @@ const TerminalComponent = () => {
 		}
 	}, []);
 
-	// Function to handle terminal input
+	// Function to handle terminal input with onData event listener
 	const handleTerminalInput = (term) => {
-		// To store the input
 		let input = '';
 
-		// Event Listener included with the terminal instance
-		term.onKey(({ key, domEvent }) => {
-			if (domEvent.key === 'Enter') {
-				// For 'Enter' key, process the input as command
+		term.onData((data) => {
+
+			// 'data' contains the character that was input
+			const char = data;
+
+			if (char === '\r') {
+				// Enter key
+				if (input.trim() !== '') {
+
+					// Update ref with latest history
+					commandHistoryRef.current = [...commandHistoryRef.current, input];
+
+					// Reset history index after input is submitted
+					historyIndexRef.current = -1;
+					console.log(commandHistoryRef.current)
+				}
 				processCommand(input.trim(), term);
 
-				// Clear the input after processing
+				// Clear input after processing
 				input = '';
-			} else if (domEvent.key === 'Backspace') {
-				// handle 'Backspace': remove the last character from the input and update terminal
+			} else if (char === '\u007F') {
+				// Backspace character
 				if (input.length > 0) {
-					// Remove the last character visually
 					term.write('\b \b');
-
-					// Update the input state
 					input = input.slice(0, -1);
 				}
-			} else if (domEvent.key.length === 1) {
-				// Add regular characters to the input buffer
-				input += key;
+			} else if (char === '\x1B[A') {
+				console.log("Up arrow is pressed")
+				// Up arrow (ANSI escape code for up)
+				if (commandHistoryRef.current.length > 0 && historyIndexRef.current < commandHistoryRef.current.length - 1) {
+					const newIndex = historyIndexRef.current + 1;
+					historyIndexRef.current = newIndex;
+					const command = commandHistoryRef.current[commandHistoryRef.current.length - 1 - newIndex];
+					
+					// clear current line
+					term.write('\r\x1B[K');
+
+					input = command;
+					term.write(`> ${input}`);
+				}
+			} else if (char === '\x1B[B') {
+				// Down arrow (ANSI escape code for down)
+				if (historyIndexRef.current > 0) {
+					const newIndex = historyIndexRef.current - 1;
+					historyIndexRef.current = newIndex;
+					const command = commandHistoryRef.current[commandHistoryRef.current.length - 1 - newIndex];
+
+					term.write('\r\x1B[K');
+					input = command;
+					term.write(`> ${input}`);
+				} else if (historyIndexRef.current === 0) {
+					historyIndexRef.current = -1;
+
+					term.write('\r\x1B[K');
+					input = '';
+
+					// Clear the input if at the bottom of the history
+					term.write('> ');
+				}
+			} else if (char === '\t') {
+				// Tab key for autocomplete
+				const autocompleteResult = handleAutoComplete(input);
+				if (autocompleteResult) {
+					term.write('\r\x1B[K');
+					input = autocompleteResult;
+					term.write(`> ${input}`);
+				}
+			} else {
+
+				// Regular character input
+				input += char;
 
 				// Display character in the terminal
-				term.write(key);
+				term.write(char);
 			}
 		});
+	};
+
+	// For autocomplete
+	const availableCommands = ['help', 'projects', 'resume', 'contact', 'clear'];
+
+	// Handle input for autocomplete
+	const handleAutoComplete = (input) => {
+		if (input) {
+			const matchingCommands = availableCommands.filter((cmd) => cmd.startsWith(input));
+			if (matchingCommands.length === 1) {
+
+				// Return the exact match
+				return matchingCommands[0];
+			}
+		}
+		return null;
 	};
 
 	// Array and Object to structure details for projects
