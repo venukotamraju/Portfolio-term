@@ -2,6 +2,7 @@
 
 import { Terminal } from '@xterm/xterm';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef } from 'react';
 
@@ -17,50 +18,51 @@ const TerminalComponent = () => {
 				if (terminalRef.current && !terminalInstance.current) {
 					const term = new Terminal({
 						cursorBlink: true,
+						fontFamily: `'Fira Mono', monospace`,
+						fontSize: 15,
 					});
 
 					// Add addons to the terminal
 					term.loadAddon(new WebLinksAddon());
+					const fitAddon = new FitAddon();
+					term.loadAddon(fitAddon);
 
 					// Open the terminal into the referenced div
-
 					term.open(terminalRef.current);
 
-					terminalInstance.current = term;
-					
+					// Focus the terminal on load to make it interactive
+					term.focus();
+
+					// Apply the fit add on
+					fitAddon.activate(term);
+					fitAddon.fit();
+
 					// Starting Line
 					term.write('Welcome to my portfolio!\r\nType "help" for a list of available commands\r\n> ');
 
+					terminalInstance.current = term;
+
 					// Handle terminal input
 					handleTerminalInput(term);
-					
-					// Function to resize the terminal
-					const resizeTerminal = () => {
-						if (terminalRef.current) {
-							const { clientWidth, clientHeight } = terminalRef.current;
 
-							// Estimate character size
-							// Adjust the divisor based on your font size
-							const cols = Math.floor(clientWidth / 10);
-							const rows = Math.floor(clientHeight / 20);
-							term.resize(cols, rows);
-						}
+					// Event listeners for focusing terminal in touch or click
+					const handleTouchOrClick = () => {
+						term.focus();
 					};
 
-					// Initial Resize
-					resizeTerminal();
-
-					// Add window resize listener to dynamically resize the terminal
-					window.addEventListener('resize', resizeTerminal);
+					terminalRef.current.addEventListener('touchstart', handleTouchOrClick);
+					terminalRef.current.addEventListener('click', handleTouchOrClick);
 
 					// Cleanup function
 					/* The terminal instance remains active even when the component unmounts. So a cleanup function is returned to dispose of the terminal when the component is unmounted. useEffect only runs when the components are mounted and reloads upon the dependent changes. But even before the component is mounted and while is being rendered, a terminal instance runs which is left undisposed even when the mounting and rendering is complete which leaves us with two terminal instances running. So we need to make sure the terminal instance runs only for the mounted component. */
 					return () => {
-						window.removeEventListener('resize', resizeTerminal);
+						terminalRef.current.removeEventListener('touchstart', handleTouchOrClick);
+						terminalRef.current.removeEventListener('click', handleTouchOrClick);
 						term.dispose();
 					};
 				}
 			};
+
 			const animationFrameId = requestAnimationFrame(initializeTerminal);
 
 			// Cleanup timeout on component unmount
@@ -70,10 +72,11 @@ const TerminalComponent = () => {
 					terminalInstance.current.dispose();
 					terminalInstance.current = null;
 				}
-			}
+			};
 		}
 	}, []);
 
+	// Function to handle terminal input
 	const handleTerminalInput = (term) => {
 		// To store the input
 		let input = '';
@@ -165,7 +168,14 @@ const TerminalComponent = () => {
 		term.write('> ');
 	}
 
-	return <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />;
+	return (
+		<div ref={terminalRef}
+			style={{
+				width: '100%',
+				height: '100%'
+			}}
+		/>
+	);
 };
 
 export default TerminalComponent;
