@@ -26,7 +26,7 @@ export const metadata = {
         alt: 'A preview image of venu kotamraju',
       },
     ],
-    url:'https://venukotamraju.vercel.com',
+    url:'https://venukotamraju.vercel.app',
   },
   twitter: {
     card: '/venu_pic_hero-min.png',
