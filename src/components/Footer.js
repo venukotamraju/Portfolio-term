@@ -2,7 +2,7 @@
 
 const Footer = () => {
 	return (
-		<footer className="bg-gray-800 text-white p-4 text-center">
+		<footer className="bg-gray-800 text-white p-4 text-center" id="footer">
 		<p>&copy; {new Date().getFullYear()} Venu Kotamraju. All rights reserved.</p>
 		</footer>
 	);

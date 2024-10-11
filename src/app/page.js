@@ -1,6 +1,8 @@
 import dynamic from 'next/dynamic'
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import HeroImage from '@/components/HeroImage';
+
 
 const TerminalComponent = dynamic(() => import ('../components/TerminalComponent'), {
 	ssr: false
@@ -10,8 +12,8 @@ export default function Home() {
   return (
 	  <div>
 	  <Header />
-	  <main className="container mx-auto">
-	  <h1 className="text-5xl text-center font-bold mt-10">Welcome to My Portfolio</h1>
+	  <main className="container my-auto mx-auto overflow-x-hidden">
+	  <HeroImage />
 	  <TerminalComponent />
 	  </main>
 	  <Footer />
